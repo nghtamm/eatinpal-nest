@@ -1,0 +1,36 @@
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  Unique,
+  Index,
+} from 'typeorm';
+import { FoodItem } from './food-item.entity';
+import { Nutrient } from './nutrient.entity';
+
+@Entity('food_item_nutrients')
+@Unique(['foodItemId', 'nutrientId'])
+export class FoodItemNutrient {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Index()
+  @Column()
+  foodItemId: number;
+
+  @ManyToOne(() => FoodItem, (item) => item.foodItemNutrients, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'food_item_id' })
+  foodItem: FoodItem;
+
+  @Column()
+  nutrientId: number;
+
+  @ManyToOne(() => Nutrient, (n) => n.foodItemNutrients, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'nutrient_id' })
+  nutrient: Nutrient;
+
+  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
+  value: number;
+}
