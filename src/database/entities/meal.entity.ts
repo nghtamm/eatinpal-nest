@@ -18,7 +18,7 @@ export class Meal {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'uuid', unique: true, default: () => 'uuid_generate_v4()' })
+  @Column({ type: 'uuid', unique: true, default: () => 'uuidv7()' })
   uuid: string;
 
   @Index()

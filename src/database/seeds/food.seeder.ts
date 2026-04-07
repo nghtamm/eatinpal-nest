@@ -69,30 +69,28 @@ async function seed() {
     for (const food of data.foods) {
       for (const n of food.nutrients) {
         const key = slugify(n.nameVI);
-        if (!nutrientMap.has(key)) {
-          const saved = await manager.save(Nutrient, manager.create(Nutrient, {
-            nameVi: n.nameVI,
-            nameEn: n.nameEN,
-            key,
-            unit: n.unit,
-          }));
-          nutrientMap.set(key, saved.id);
-        }
+        if (!key || !n.unit || nutrientMap.has(key)) continue;
+        const saved = await manager.save(Nutrient, manager.create(Nutrient, {
+          nameVi: n.nameVI,
+          nameEn: n.nameEN,
+          key,
+          unit: n.unit,
+        }));
+        nutrientMap.set(key, saved.id);
       }
     }
 
     for (const meal of data.meals) {
       for (const n of meal.nutrients) {
         const key = n.key || slugify(n.nameVI);
-        if (!nutrientMap.has(key)) {
-          const saved = await manager.save(Nutrient, manager.create(Nutrient, {
-            nameVi: n.nameVI,
-            nameEn: n.nameEN,
-            key,
-            unit: n.unit,
-          }));
-          nutrientMap.set(key, saved.id);
-        }
+        if (!key || !n.unit || nutrientMap.has(key)) continue;
+        const saved = await manager.save(Nutrient, manager.create(Nutrient, {
+          nameVi: n.nameVI,
+          nameEn: n.nameEN,
+          key,
+          unit: n.unit,
+        }));
+        nutrientMap.set(key, saved.id);
       }
     }
     console.log(`  Saved ${nutrientMap.size} unique nutrients`);
@@ -111,17 +109,19 @@ async function seed() {
         type: FoodItemType.INGREDIENT,
         code: food.code,
         nameVi: food.nameVI,
-        nameEn: food.nameEN,
+        nameEn: food.nameEN || '',
         energy: food.energy ?? undefined,
         categoryId: catId,
         sourceId: food.sourceID,
       }));
 
+      const seenNutrientIds = new Set<number>();
       const finEntities = food.nutrients
         .map((n) => {
           const key = slugify(n.nameVI);
           const nutrientId = nutrientMap.get(key);
-          if (!nutrientId) return null;
+          if (!nutrientId || seenNutrientIds.has(nutrientId)) return null;
+          seenNutrientIds.add(nutrientId);
           return manager.create(FoodItemNutrient, {
             foodItemId: savedItem.id,
             nutrientId,
@@ -150,7 +150,7 @@ async function seed() {
         type: FoodItemType.DISH,
         code: meal.code,
         nameVi: meal.nameVI,
-        nameEn: meal.nameEN,
+        nameEn: meal.nameEN || '',
         nameAscii: meal.nameAscii || undefined,
         description: meal.description || undefined,
         imageUrl: meal.image || undefined,
@@ -159,11 +159,13 @@ async function seed() {
         sourceId: meal.sourceID,
       }));
 
+      const seenMealNutrientIds = new Set<number>();
       const finEntities = meal.nutrients
         .map((n) => {
           const key = n.key || slugify(n.nameVI);
           const nutrientId = nutrientMap.get(key);
-          if (!nutrientId) return null;
+          if (!nutrientId || seenMealNutrientIds.has(nutrientId)) return null;
+          seenMealNutrientIds.add(nutrientId);
           return manager.create(FoodItemNutrient, {
             foodItemId: savedItem.id,
             nutrientId,
