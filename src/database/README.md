@@ -1,6 +1,6 @@
-# EatinPal Database Schema
+# [EatinPal] Database Schema
 
-## Group 1: Food Data
+## Group 1: Foods, Meals and Ingredients
 
 ### `food_categories`
 
@@ -26,8 +26,8 @@
 | name_vi | VARCHAR(255) | NOT NULL | |
 | name_en | VARCHAR(255) | NOT NULL | |
 | name_ascii | VARCHAR(255) | | Chỉ dishes có |
-| description | TEXT | | Chỉ dishes có |
-| image_url | VARCHAR(500) | | Chỉ dishes có |
+| description | TEXT | | |
+| image_url | VARCHAR(500) | | |
 | energy | DECIMAL(10,2) | | Kcal per 100g |
 | category_id | INT | FK → food_categories(id), NOT NULL | |
 | source_id | VARCHAR(100) | | ID gốc từ viendinhduong |
@@ -150,9 +150,9 @@
 | logged_at | DATE | NOT NULL | Ngày cân |
 | note | VARCHAR(255) | | |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | |
-| | | UNIQUE (user_id, logged_at) | Mỗi user 1 record per ngày |
+| | | UNIQUE (user_id, logged_at) | Mỗi user 1 record per day |
 
-## Group 3: Meal Tracking
+## Group 3: Meals/Calories Tracking
 
 ### `daily_logs`
 
@@ -165,7 +165,7 @@
 | note | VARCHAR(500) | | |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | |
 | updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | |
-| | | UNIQUE (user_id, date) | Mỗi user 1 log per ngày |
+| | | UNIQUE (user_id, date) | Mỗi user 1 log per day |
 
 ### `meals`
 
@@ -222,6 +222,6 @@ users           1──N daily_logs
 
 daily_logs      1──N meals
 meals           1──N meal_entries
-meal_entries    1──1 custom_meal_entries (optional)
-meal_entries    N──1 serving_sizes (optional)
+meal_entries    1──1 custom_meal_entries
+meal_entries    N──1 serving_sizes
 ```
