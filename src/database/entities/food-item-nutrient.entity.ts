@@ -11,21 +11,21 @@ import { FoodItem } from './food-item.entity';
 import { Nutrient } from './nutrient.entity';
 
 @Entity('food_item_nutrients')
-@Unique(['foodItemId', 'nutrientId'])
+@Unique(['foodItemID', 'nutrientID'])
 export class FoodItemNutrient {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Index()
-  @Column()
-  foodItemId: number;
+  @Column({ name: 'food_item_id' })
+  foodItemID: number;
 
   @ManyToOne(() => FoodItem, (item) => item.foodItemNutrients, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'food_item_id' })
   foodItem: FoodItem;
 
-  @Column()
-  nutrientId: number;
+  @Column({ name: 'nutrient_id' })
+  nutrientID: number;
 
   @ManyToOne(() => Nutrient, (n) => n.foodItemNutrients, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'nutrient_id' })

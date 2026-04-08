@@ -31,8 +31,8 @@ export class User {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  avatarUrl: string;
+  @Column({ type: 'varchar', length: 500, nullable: true, name: 'avatar_url' })
+  avatarURL: string;
 
   @Column({ type: 'boolean', default: false })
   emailVerified: boolean;

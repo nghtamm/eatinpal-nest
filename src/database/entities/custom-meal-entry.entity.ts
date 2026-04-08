@@ -12,8 +12,8 @@ export class CustomMealEntry {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  mealEntryId: number;
+  @Column({ unique: true, name: 'meal_entry_id' })
+  mealEntryID: number;
 
   @OneToOne(() => MealEntry, (me) => me.customMealEntry, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'meal_entry_id' })
@@ -26,11 +26,11 @@ export class CustomMealEntry {
   calories: number;
 
   @Column({ type: 'decimal', precision: 8, scale: 2, nullable: true })
-  proteinG: number;
+  protein: number;
 
   @Column({ type: 'decimal', precision: 8, scale: 2, nullable: true })
-  fatG: number;
+  fat: number;
 
   @Column({ type: 'decimal', precision: 8, scale: 2, nullable: true })
-  carbsG: number;
+  carbs: number;
 }

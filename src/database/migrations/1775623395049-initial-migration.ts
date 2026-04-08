@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class InitialMigration1775555414711 implements MigrationInterface {
-  name = 'InitialMigration1775555414711';
+export class InitialMigration1775623395049 implements MigrationInterface {
+  name = 'InitialMigration1775623395049';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "pg_trgm"`);
@@ -24,19 +24,13 @@ export class InitialMigration1775555414711 implements MigrationInterface {
       `CREATE INDEX "IDX_a3f8ed29c5855aa9d5d9640bfc" ON "refresh_tokens" ("revoked_at") `,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."user_profiles_gender_enum" AS ENUM('male', 'female', 'other')`,
+      `CREATE TABLE "nutrition_goals" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "calories" integer NOT NULL, "protein" numeric(5,1), "fat" numeric(5,1), "carbs" numeric(5,1), "is_custom" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_f597d22636d94f843903aeb9aab" UNIQUE ("user_id"), CONSTRAINT "REL_f597d22636d94f843903aeb9aa" UNIQUE ("user_id"), CONSTRAINT "PK_843d6ec58065c4f34aabc9052a3" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."user_profiles_activity_level_enum" AS ENUM('sedentary', 'light', 'moderate', 'active', 'very_active')`,
+      `CREATE TABLE "weight_logs" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "weight_kg" numeric(5,1) NOT NULL, "logged_at" date NOT NULL, "note" character varying(255), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_51a634dd5cd58a36758b65a13de" UNIQUE ("user_id", "logged_at"), CONSTRAINT "PK_96c8f4d341846b34fef50cf4576" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."user_profiles_goal_enum" AS ENUM('lose', 'maintain', 'gain')`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "user_profiles" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "gender" "public"."user_profiles_gender_enum", "date_of_birth" date, "height_cm" numeric(5,1), "weight_kg" numeric(5,1), "activity_level" "public"."user_profiles_activity_level_enum", "goal" "public"."user_profiles_goal_enum", "timezone" character varying(50) NOT NULL DEFAULT 'Asia/Ho_Chi_Minh', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_6ca9503d77ae39b4b5a6cc3ba88" UNIQUE ("user_id"), CONSTRAINT "REL_6ca9503d77ae39b4b5a6cc3ba8" UNIQUE ("user_id"), CONSTRAINT "PK_1ec6662219f4605723f1e41b6cb" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "nutrition_goals" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "calories" integer NOT NULL, "protein_g" numeric(5,1), "fat_g" numeric(5,1), "carbs_g" numeric(5,1), "is_custom" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_f597d22636d94f843903aeb9aab" UNIQUE ("user_id"), CONSTRAINT "REL_f597d22636d94f843903aeb9aa" UNIQUE ("user_id"), CONSTRAINT "PK_843d6ec58065c4f34aabc9052a3" PRIMARY KEY ("id"))`,
+      `CREATE INDEX "IDX_0341010b3956b50d880f4fe15b" ON "weight_logs" ("user_id") `,
     );
     await queryRunner.query(
       `CREATE TYPE "public"."food_categories_type_enum" AS ENUM('ingredient', 'dish')`,
@@ -69,7 +63,7 @@ export class InitialMigration1775555414711 implements MigrationInterface {
       `CREATE INDEX "IDX_bf31353b77c5507183f82b7a28" ON "food_items" ("category_id") `,
     );
     await queryRunner.query(
-      `CREATE TABLE "custom_meal_entries" ("id" SERIAL NOT NULL, "meal_entry_id" integer NOT NULL, "name" character varying(255) NOT NULL, "calories" numeric(8,2) NOT NULL, "protein_g" numeric(8,2), "fat_g" numeric(8,2), "carbs_g" numeric(8,2), CONSTRAINT "UQ_613c99407f1086c21ef95fb7019" UNIQUE ("meal_entry_id"), CONSTRAINT "REL_613c99407f1086c21ef95fb701" UNIQUE ("meal_entry_id"), CONSTRAINT "PK_403f9b7f0193476ce37aa31692a" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "custom_meal_entries" ("id" SERIAL NOT NULL, "meal_entry_id" integer NOT NULL, "name" character varying(255) NOT NULL, "calories" numeric(8,2) NOT NULL, "protein" numeric(8,2), "fat" numeric(8,2), "carbs" numeric(8,2), CONSTRAINT "UQ_613c99407f1086c21ef95fb7019" UNIQUE ("meal_entry_id"), CONSTRAINT "REL_613c99407f1086c21ef95fb701" UNIQUE ("meal_entry_id"), CONSTRAINT "PK_403f9b7f0193476ce37aa31692a" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "meal_entries" ("id" SERIAL NOT NULL, "meal_id" integer NOT NULL, "food_item_id" integer, "serving_size_id" integer, "quantity" numeric(6,2) NOT NULL, "quantity_grams" numeric(8,2) NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_b69a336a32fc8e1a770994db17d" PRIMARY KEY ("id"))`,
@@ -96,10 +90,16 @@ export class InitialMigration1775555414711 implements MigrationInterface {
       `CREATE TABLE "users" ("id" SERIAL NOT NULL, "uuid" uuid NOT NULL DEFAULT uuidv7(), "email" character varying(255) NOT NULL, "password_hash" character varying(255), "name" character varying(100) NOT NULL, "avatar_url" character varying(500), "email_verified" boolean NOT NULL DEFAULT false, "is_active" boolean NOT NULL DEFAULT true, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_951b8f1dfc94ac1d0301a14b7e1" UNIQUE ("uuid"), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "weight_logs" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "weight_kg" numeric(5,1) NOT NULL, "logged_at" date NOT NULL, "note" character varying(255), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_51a634dd5cd58a36758b65a13de" UNIQUE ("user_id", "logged_at"), CONSTRAINT "PK_96c8f4d341846b34fef50cf4576" PRIMARY KEY ("id"))`,
+      `CREATE TYPE "public"."user_profiles_gender_enum" AS ENUM('male', 'female', 'other')`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_0341010b3956b50d880f4fe15b" ON "weight_logs" ("user_id") `,
+      `CREATE TYPE "public"."user_profiles_activity_level_enum" AS ENUM('sedentary', 'light', 'moderate', 'active', 'very_active')`,
+    );
+    await queryRunner.query(
+      `CREATE TYPE "public"."user_profiles_goal_enum" AS ENUM('lose', 'maintain', 'gain')`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "user_profiles" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "gender" "public"."user_profiles_gender_enum", "date_of_birth" date, "height_cm" numeric(5,1), "weight_kg" numeric(5,1), "activity_level" "public"."user_profiles_activity_level_enum", "goal" "public"."user_profiles_goal_enum", "timezone" character varying(50) NOT NULL DEFAULT 'Asia/Ho_Chi_Minh', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_6ca9503d77ae39b4b5a6cc3ba88" UNIQUE ("user_id"), CONSTRAINT "REL_6ca9503d77ae39b4b5a6cc3ba8" UNIQUE ("user_id"), CONSTRAINT "PK_1ec6662219f4605723f1e41b6cb" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `ALTER TABLE "user_auth_providers" ADD CONSTRAINT "FK_f1b986eb2b94d3c3beaf580c092" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
@@ -108,10 +108,10 @@ export class InitialMigration1775555414711 implements MigrationInterface {
       `ALTER TABLE "refresh_tokens" ADD CONSTRAINT "FK_3ddc983c5f7bcf132fd8732c3f4" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "user_profiles" ADD CONSTRAINT "FK_6ca9503d77ae39b4b5a6cc3ba88" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+      `ALTER TABLE "nutrition_goals" ADD CONSTRAINT "FK_f597d22636d94f843903aeb9aab" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "nutrition_goals" ADD CONSTRAINT "FK_f597d22636d94f843903aeb9aab" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+      `ALTER TABLE "weight_logs" ADD CONSTRAINT "FK_0341010b3956b50d880f4fe15bc" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "food_item_nutrients" ADD CONSTRAINT "FK_4f6ac130f6eb4973b366ba19994" FOREIGN KEY ("food_item_id") REFERENCES "food_items"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
@@ -144,7 +144,7 @@ export class InitialMigration1775555414711 implements MigrationInterface {
       `ALTER TABLE "daily_logs" ADD CONSTRAINT "FK_28dc684c15a9369be262170f705" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "weight_logs" ADD CONSTRAINT "FK_0341010b3956b50d880f4fe15bc" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+      `ALTER TABLE "user_profiles" ADD CONSTRAINT "FK_6ca9503d77ae39b4b5a6cc3ba88" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_food_items_name_vi_trgm" ON "food_items" USING GIN ("name_vi" gin_trgm_ops)`,
@@ -156,7 +156,13 @@ export class InitialMigration1775555414711 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "weight_logs" DROP CONSTRAINT "FK_0341010b3956b50d880f4fe15bc"`,
+      `DROP INDEX IF EXISTS "IDX_food_items_name_en_trgm"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "IDX_food_items_name_vi_trgm"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "user_profiles" DROP CONSTRAINT "FK_6ca9503d77ae39b4b5a6cc3ba88"`,
     );
     await queryRunner.query(
       `ALTER TABLE "daily_logs" DROP CONSTRAINT "FK_28dc684c15a9369be262170f705"`,
@@ -189,10 +195,10 @@ export class InitialMigration1775555414711 implements MigrationInterface {
       `ALTER TABLE "food_item_nutrients" DROP CONSTRAINT "FK_4f6ac130f6eb4973b366ba19994"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "nutrition_goals" DROP CONSTRAINT "FK_f597d22636d94f843903aeb9aab"`,
+      `ALTER TABLE "weight_logs" DROP CONSTRAINT "FK_0341010b3956b50d880f4fe15bc"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "user_profiles" DROP CONSTRAINT "FK_6ca9503d77ae39b4b5a6cc3ba88"`,
+      `ALTER TABLE "nutrition_goals" DROP CONSTRAINT "FK_f597d22636d94f843903aeb9aab"`,
     );
     await queryRunner.query(
       `ALTER TABLE "refresh_tokens" DROP CONSTRAINT "FK_3ddc983c5f7bcf132fd8732c3f4"`,
@@ -200,10 +206,12 @@ export class InitialMigration1775555414711 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "user_auth_providers" DROP CONSTRAINT "FK_f1b986eb2b94d3c3beaf580c092"`,
     );
+    await queryRunner.query(`DROP TABLE "user_profiles"`);
+    await queryRunner.query(`DROP TYPE "public"."user_profiles_goal_enum"`);
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_0341010b3956b50d880f4fe15b"`,
+      `DROP TYPE "public"."user_profiles_activity_level_enum"`,
     );
-    await queryRunner.query(`DROP TABLE "weight_logs"`);
+    await queryRunner.query(`DROP TYPE "public"."user_profiles_gender_enum"`);
     await queryRunner.query(`DROP TABLE "users"`);
     await queryRunner.query(
       `DROP INDEX "public"."IDX_28dc684c15a9369be262170f70"`,
@@ -235,13 +243,11 @@ export class InitialMigration1775555414711 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "nutrients"`);
     await queryRunner.query(`DROP TABLE "food_categories"`);
     await queryRunner.query(`DROP TYPE "public"."food_categories_type_enum"`);
-    await queryRunner.query(`DROP TABLE "nutrition_goals"`);
-    await queryRunner.query(`DROP TABLE "user_profiles"`);
-    await queryRunner.query(`DROP TYPE "public"."user_profiles_goal_enum"`);
     await queryRunner.query(
-      `DROP TYPE "public"."user_profiles_activity_level_enum"`,
+      `DROP INDEX "public"."IDX_0341010b3956b50d880f4fe15b"`,
     );
-    await queryRunner.query(`DROP TYPE "public"."user_profiles_gender_enum"`);
+    await queryRunner.query(`DROP TABLE "weight_logs"`);
+    await queryRunner.query(`DROP TABLE "nutrition_goals"`);
     await queryRunner.query(
       `DROP INDEX "public"."IDX_a3f8ed29c5855aa9d5d9640bfc"`,
     );
@@ -255,12 +261,6 @@ export class InitialMigration1775555414711 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "user_auth_providers"`);
     await queryRunner.query(
       `DROP TYPE "public"."user_auth_providers_provider_enum"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "IDX_food_items_name_en_trgm"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "IDX_food_items_name_vi_trgm"`,
     );
     await queryRunner.query(`DROP EXTENSION IF EXISTS "pg_trgm"`);
   }

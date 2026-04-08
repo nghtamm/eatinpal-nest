@@ -14,8 +14,8 @@ export class NutritionGoal {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  userId: number;
+  @Column({ unique: true, name: 'user_id' })
+  userID: number;
 
   @OneToOne(() => User, (u) => u.nutritionGoal, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
@@ -25,13 +25,13 @@ export class NutritionGoal {
   calories: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 1, nullable: true })
-  proteinG: number;
+  protein: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 1, nullable: true })
-  fatG: number;
+  fat: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 1, nullable: true })
-  carbsG: number;
+  carbs: number;
 
   @Column({ type: 'boolean', default: false })
   isCustom: boolean;

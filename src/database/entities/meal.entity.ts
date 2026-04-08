@@ -22,8 +22,8 @@ export class Meal {
   uuid: string;
 
   @Index()
-  @Column()
-  dailyLogId: number;
+  @Column({ name: 'daily_log_id' })
+  dailyLogID: number;
 
   @ManyToOne(() => DailyLog, (dl) => dl.meals, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'daily_log_id' })

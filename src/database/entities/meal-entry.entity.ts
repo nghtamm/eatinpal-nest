@@ -20,22 +20,22 @@ export class MealEntry {
   id: number;
 
   @Index()
-  @Column()
-  mealId: number;
+  @Column({ name: 'meal_id' })
+  mealID: number;
 
   @ManyToOne(() => Meal, (m) => m.mealEntries, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'meal_id' })
   meal: Meal;
 
-  @Column({ nullable: true })
-  foodItemId: number;
+  @Column({ nullable: true, name: 'food_item_id' })
+  foodItemID: number;
 
   @ManyToOne(() => FoodItem, { nullable: true })
   @JoinColumn({ name: 'food_item_id' })
   foodItem: FoodItem;
 
-  @Column({ nullable: true })
-  servingSizeId: number;
+  @Column({ nullable: true, name: 'serving_size_id' })
+  servingSizeID: number;
 
   @ManyToOne(() => ServingSize, { nullable: true })
   @JoinColumn({ name: 'serving_size_id' })

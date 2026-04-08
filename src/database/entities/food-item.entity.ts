@@ -28,34 +28,34 @@ export class FoodItem {
   @Column({ type: 'varchar', length: 50, unique: true })
   code: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  nameVi: string;
+  @Column({ type: 'varchar', length: 255, name: 'name_vi' })
+  nameVI: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  nameEn: string;
+  @Column({ type: 'varchar', length: 255, name: 'name_en' })
+  nameEN: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  nameAscii: string;
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'name_ascii' })
+  nameASCII: string;
 
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  imageUrl: string;
+  @Column({ type: 'varchar', length: 500, nullable: true, name: 'image_url' })
+  imageURL: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   energy: number;
 
   @Index()
-  @Column()
-  categoryId: number;
+  @Column({ name: 'category_id' })
+  categoryID: number;
 
   @ManyToOne(() => FoodCategory, (cat) => cat.foodItems)
   @JoinColumn({ name: 'category_id' })
   category: FoodCategory;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  sourceId: string;
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'source_id' })
+  sourceID: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

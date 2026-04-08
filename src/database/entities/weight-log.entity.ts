@@ -11,14 +11,14 @@ import {
 import { User } from './user.entity';
 
 @Entity('weight_logs')
-@Unique(['userId', 'loggedAt'])
+@Unique(['userID', 'loggedAt'])
 export class WeightLog {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Index()
-  @Column()
-  userId: number;
+  @Column({ name: 'user_id' })
+  userID: number;
 
   @ManyToOne(() => User, (u) => u.weightLogs, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

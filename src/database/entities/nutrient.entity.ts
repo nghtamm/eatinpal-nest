@@ -13,11 +13,11 @@ export class Nutrient {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
-  nameVi: string;
+  @Column({ type: 'varchar', length: 255, name: 'name_vi' })
+  nameVI: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  nameEn: string;
+  @Column({ type: 'varchar', length: 255, name: 'name_en' })
+  nameEN: string;
 
   @Column({ type: 'varchar', length: 100, unique: true })
   key: string;

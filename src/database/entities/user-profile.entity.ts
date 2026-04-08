@@ -15,8 +15,8 @@ export class UserProfile {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  userId: number;
+  @Column({ unique: true, name: 'user_id' })
+  userID: number;
 
   @OneToOne(() => User, (u) => u.profile, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

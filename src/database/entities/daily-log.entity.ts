@@ -14,7 +14,7 @@ import { User } from './user.entity';
 import { Meal } from './meal.entity';
 
 @Entity('daily_logs')
-@Unique(['userId', 'date'])
+@Unique(['userID', 'date'])
 export class DailyLog {
   @PrimaryGeneratedColumn()
   id: number;
@@ -23,8 +23,8 @@ export class DailyLog {
   uuid: string;
 
   @Index()
-  @Column()
-  userId: number;
+  @Column({ name: 'user_id' })
+  userID: number;
 
   @ManyToOne(() => User, (u) => u.dailyLogs, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

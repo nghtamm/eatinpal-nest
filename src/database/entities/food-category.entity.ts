@@ -14,11 +14,11 @@ export class FoodCategory {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
-  nameVi: string;
+  @Column({ type: 'varchar', length: 255, name: 'name_vi' })
+  nameVI: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  nameEn: string;
+  @Column({ type: 'varchar', length: 255, name: 'name_en' })
+  nameEN: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
   slug: string;
@@ -26,8 +26,8 @@ export class FoodCategory {
   @Column({ type: 'enum', enum: FoodItemType })
   type: FoodItemType;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  sourceId: string;
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'source_id' })
+  sourceID: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
