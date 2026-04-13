@@ -1,11 +1,11 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
-  JoinColumn,
-  Unique,
+  Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { FoodItem } from './food-item.entity';
 import { Nutrient } from './nutrient.entity';
@@ -20,14 +20,18 @@ export class FoodItemNutrient {
   @Column({ name: 'food_item_id' })
   foodItemID: number;
 
-  @ManyToOne(() => FoodItem, (item) => item.foodItemNutrients, { onDelete: 'CASCADE' })
+  @ManyToOne(() => FoodItem, (item) => item.foodItemNutrients, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'food_item_id' })
   foodItem: FoodItem;
 
   @Column({ name: 'nutrient_id' })
   nutrientID: number;
 
-  @ManyToOne(() => Nutrient, (n) => n.foodItemNutrients, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Nutrient, (n) => n.foodItemNutrients, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'nutrient_id' })
   nutrient: Nutrient;
 

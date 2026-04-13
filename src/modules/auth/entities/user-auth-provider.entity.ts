@@ -1,15 +1,15 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  ManyToOne,
-  JoinColumn,
-  Unique,
+  Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
-import { AuthProvider } from '../../common/constants';
-import { User } from './user.entity';
+import { AuthProvider } from '../../../common/constants/auth-provider.enum';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('user_auth_providers')
 @Unique(['userID', 'provider'])

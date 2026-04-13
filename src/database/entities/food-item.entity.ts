@@ -1,15 +1,15 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   OneToMany,
-  JoinColumn,
-  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { FoodItemType } from '../../common/constants';
+import { FoodItemType } from '../../common/constants/food-item-type.enum';
 import { FoodCategory } from './food-category.entity';
 import { FoodItemNutrient } from './food-item-nutrient.entity';
 import { ServingSize } from './serving-size.entity';

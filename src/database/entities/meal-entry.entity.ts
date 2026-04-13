@@ -1,18 +1,18 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   OneToOne,
-  JoinColumn,
-  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Meal } from './meal.entity';
-import { FoodItem } from './food-item.entity';
-import { ServingSize } from './serving-size.entity';
 import { CustomMealEntry } from './custom-meal-entry.entity';
+import { FoodItem } from './food-item.entity';
+import { Meal } from './meal.entity';
+import { ServingSize } from './serving-size.entity';
 
 @Entity('meal_entries')
 export class MealEntry {

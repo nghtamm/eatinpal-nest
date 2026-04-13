@@ -1,11 +1,10 @@
-import { DataSource } from 'typeorm';
-import { dataSourceOptions } from '../data-source';
+import { getProcessedData } from 'eatinpal-crawler';
+import { FoodItemType } from '../../common/constants/food-item-type.enum';
+import PostgresDataSource from '../data-source';
 import { FoodCategory } from '../entities/food-category.entity';
+import { FoodItemNutrient } from '../entities/food-item-nutrient.entity';
 import { FoodItem } from '../entities/food-item.entity';
 import { Nutrient } from '../entities/nutrient.entity';
-import { FoodItemNutrient } from '../entities/food-item-nutrient.entity';
-import { FoodItemType } from '../../common/constants';
-import { getProcessedData } from 'eatinpal-crawler';
 
 function slugify(str: string): string {
   return str
@@ -29,11 +28,10 @@ async function seed() {
     `[EATINPAL-CRAWLER] Categories: ${data.foodCategories.length} food, ${data.mealCategories.length} meal`,
   );
 
-  const dataSource = new DataSource(dataSourceOptions);
-  await dataSource.initialize();
+  await PostgresDataSource.initialize();
   console.log('[POSTGRESQL] Database connected!');
 
-  await dataSource.transaction(async (manager) => {
+  await PostgresDataSource.transaction(async (manager) => {
     // 1 - Seed food categories
     console.log('[SEED] Seeding food categories...');
     const categoryMap = new Map<string, number>();
@@ -117,7 +115,7 @@ async function seed() {
       const catID = categoryMap.get(food.categoryVI);
       if (!catID) {
         console.warn(
-          `[WARN] Skipping food "${food.nameVI}": category not found`,
+          `[WARN] Skipping food '${food.nameVI}': category not found`,
         );
         continue;
       }
@@ -161,7 +159,7 @@ async function seed() {
       const catID = categoryMap.get(meal.categorySourceID);
       if (!catID) {
         console.warn(
-          `[WARN] Skipping meal "${meal.nameVI}": category not found`,
+          `[WARN] Skipping meal '${meal.nameVI}': category not found`,
         );
         continue;
       }
@@ -204,7 +202,7 @@ async function seed() {
   });
 
   console.log('[OK] Seed completed successfully!');
-  await dataSource.destroy();
+  await PostgresDataSource.destroy();
 }
 
 seed().catch((err) => {

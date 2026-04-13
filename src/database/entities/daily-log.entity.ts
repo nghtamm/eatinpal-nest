@@ -1,16 +1,16 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   OneToMany,
-  JoinColumn,
+  PrimaryGeneratedColumn,
   Unique,
-  Index,
+  UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../../modules/users/entities/user.entity';
 import { Meal } from './meal.entity';
 
 @Entity('daily_logs')
