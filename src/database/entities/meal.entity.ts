@@ -1,15 +1,15 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   OneToMany,
-  JoinColumn,
-  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { MealType } from '../../common/constants';
+import { MealType } from '../../common/constants/meal-type.enum';
 import { DailyLog } from './daily-log.entity';
 import { MealEntry } from './meal-entry.entity';
 

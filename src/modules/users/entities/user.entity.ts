@@ -1,18 +1,18 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  OneToOne,
+  Entity,
   OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { UserAuthProvider } from './user-auth-provider.entity';
-import { RefreshToken } from './refresh-token.entity';
-import { UserProfile } from './user-profile.entity';
+import { DailyLog } from '../../../database/entities/daily-log.entity';
+import { RefreshToken } from '../../auth/entities/refresh-token.entity';
+import { UserAuthProvider } from '../../auth/entities/user-auth-provider.entity';
 import { NutritionGoal } from './nutrition-goal.entity';
+import { UserProfile } from './user-profile.entity';
 import { WeightLog } from './weight-log.entity';
-import { DailyLog } from './daily-log.entity';
 
 @Entity('users')
 export class User {

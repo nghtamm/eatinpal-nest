@@ -1,12 +1,12 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
   OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { FoodItemType } from '../../common/constants';
+import { FoodItemType } from '../../common/constants/food-item-type.enum';
 import { FoodItem } from './food-item.entity';
 
 @Entity('food_categories')

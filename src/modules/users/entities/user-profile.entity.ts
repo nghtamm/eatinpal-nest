@@ -1,13 +1,15 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  OneToOne,
+  Entity,
   JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Gender, ActivityLevel, UserGoal } from '../../common/constants';
+import { ActivityLevel } from '../../../common/constants/activity-level.enum';
+import { Gender } from '../../../common/constants/gender.enum';
+import { UserGoal } from '../../../common/constants/user-goal.enum';
 import { User } from './user.entity';
 
 @Entity('user_profiles')

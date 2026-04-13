@@ -1,9 +1,9 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  OneToOne,
+  Entity,
   JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { MealEntry } from './meal-entry.entity';
 
@@ -15,7 +15,9 @@ export class CustomMealEntry {
   @Column({ unique: true, name: 'meal_entry_id' })
   mealEntryID: number;
 
-  @OneToOne(() => MealEntry, (me) => me.customMealEntry, { onDelete: 'CASCADE' })
+  @OneToOne(() => MealEntry, (me) => me.customMealEntry, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'meal_entry_id' })
   mealEntry: MealEntry;
 

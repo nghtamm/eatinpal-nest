@@ -1,12 +1,12 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
+  Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { FoodItem } from './food-item.entity';
 
@@ -19,7 +19,9 @@ export class ServingSize {
   @Column({ name: 'food_item_id' })
   foodItemID: number;
 
-  @ManyToOne(() => FoodItem, (item) => item.servingSizes, { onDelete: 'CASCADE' })
+  @ManyToOne(() => FoodItem, (item) => item.servingSizes, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'food_item_id' })
   foodItem: FoodItem;
 
