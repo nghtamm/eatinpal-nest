@@ -10,8 +10,8 @@ import { ObjStringToSnakeCase } from '../utils/string.util';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const status = context.switchToHttp().getResponse().statusCode;
+  intercept(ctx: ExecutionContext, next: CallHandler): Observable<any> {
+    const status = ctx.switchToHttp().getResponse().statusCode;
 
     return next.handle().pipe(
       map((data) => {
