@@ -19,7 +19,7 @@ export class ResponseInterceptor implements NestInterceptor {
 
         return {
           status_code: status,
-          message: message ?? 'Success!',
+          message: message ?? 'Success',
           data: Object.keys(rest).length > 0 ? ObjStringToSnakeCase(rest) : null,
           ...(metadata && { metadata: ObjStringToSnakeCase(metadata) }),
         };

@@ -36,7 +36,7 @@ export class AuthService {
       AuthProvider.LOCAL,
     );
 
-    return { message: 'Registration successful!' };
+    return { message: 'Registration successful' };
   }
 
   async login(user: User): Promise<any> {
@@ -56,7 +56,7 @@ export class AuthService {
         },
       });
       if (!stored) {
-        throw new UnauthorizedException('Invalid refresh token!');
+        throw new UnauthorizedException('Token is invalid or already revoked');
       }
 
       await this.refreshTokenRepository.update(stored.id, {
@@ -73,7 +73,7 @@ export class AuthService {
   async refresh(userID: number, refreshToken: string): Promise<any> {
     const user = await this.usersService.findOneByID(userID);
     if (!user) {
-      throw new UnauthorizedException('User not found!');
+      throw new UnauthorizedException('Token is invalid or already revoked');
     }
 
     const stored = await this.refreshTokenRepository.findOne({
@@ -84,9 +84,7 @@ export class AuthService {
       },
     });
     if (!stored || stored.expiresAt < new Date()) {
-      throw new UnauthorizedException(
-        'Refresh token may be expired, revoked or invalid!',
-      );
+      throw new UnauthorizedException('Token is invalid or already revoked');
     }
 
     await this.refreshTokenRepository.update(stored.id, {
@@ -137,12 +135,12 @@ export class AuthService {
   async validateLocal(email: string, password: string): Promise<User> {
     const user = await this.usersService.findOneByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Email or password is incorrect!');
+      throw new UnauthorizedException('This email is not registered');
     }
 
     const match = await BcryptCompare(password, user.passwordHash);
     if (!match) {
-      throw new UnauthorizedException('Email or password is incorrect!');
+      throw new UnauthorizedException('Password is incorrect');
     }
 
     return user;
@@ -151,7 +149,7 @@ export class AuthService {
   async validateJWT(payload: { sub: number; email: string }): Promise<User> {
     const user = await this.usersService.findOneByID(payload.sub);
     if (!user || !user.isActive) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('This account is inactive or does not exist');
     }
     return user;
   }
