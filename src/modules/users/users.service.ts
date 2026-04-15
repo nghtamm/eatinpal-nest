@@ -29,7 +29,7 @@ export class UsersService {
         where: { email: dto.email },
       });
       if (exists) {
-        throw new ConflictException('This email is already taken.');
+        throw new ConflictException('This email is already taken');
       }
 
       const user = manager.create(User, dto);
