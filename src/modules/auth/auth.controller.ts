@@ -3,14 +3,18 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { Public } from 'src/common/decorators/public.decorator';
+import { Serialize } from '../../common/decorators/serialize.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { GetUser } from './decorators/user.decorator';
 import { RegisterDTO } from './dto/register.dto';
+import { AuthResponseDTO } from './dto/response/auth-response.dto';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { LocalAuthGuard } from './guards/local.guard';
 
 @Controller('auth')
@@ -25,6 +29,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(LocalAuthGuard)
+  @Serialize(AuthResponseDTO)
   @HttpCode(HttpStatus.OK)
   @Post('login')
   login(@GetUser() user: User) {
@@ -32,6 +37,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(JwtRefreshGuard)
   @Post('refresh')
   refresh(
     @GetUser('id') userID: number,
@@ -40,8 +46,8 @@ export class AuthController {
     return this.authService.refresh(userID, refreshToken);
   }
 
-  @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @Post('logout')
   logout(
     @GetUser('id') userID: number,
     @Body('refresh_token') refreshToken?: string,

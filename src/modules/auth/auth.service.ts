@@ -2,16 +2,17 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
-import { AuthProvider } from 'src/common/constants/auth-provider.enum';
-import { BcryptHash, SHA256 } from 'src/common/utils/cryptography.util';
 import { IsNull, Repository } from 'typeorm';
+import { AuthProvider } from '../../common/constants/auth-provider.enum';
+import {
+  BcryptCompare,
+  BcryptHash,
+  SHA256,
+} from '../../common/utils/cryptography.util';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import { AuthResponseDTO } from './dto/response/auth-response.dto';
 import { RegisterDTO } from './dto/register.dto';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { UserAuthProvider } from './entities/user-auth-provider.entity';
 
 @Injectable()
 export class AuthService {
@@ -20,40 +21,29 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
 
-    @InjectRepository(UserAuthProvider)
-    private readonly authProviderRepository: Repository<UserAuthProvider>,
-
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
-  async register(dto: RegisterDTO): Promise<string> {
+  async register(dto: RegisterDTO): Promise<any> {
     const hash = await BcryptHash(dto.password);
+    await this.usersService.create(
+      {
+        email: dto.email,
+        passwordHash: hash,
+        name: dto.name,
+      },
+      AuthProvider.LOCAL,
+    );
 
-    const user = await this.usersService.create({
-      email: dto.email,
-      passwordHash: hash,
-      name: dto.name,
-    });
-
-    const provider = this.authProviderRepository.create({
-      user: user,
-      provider: AuthProvider.LOCAL,
-    });
-    await this.authProviderRepository.save(provider);
-
-    return 'Registration successful!';
+    return { message: 'Registration successful!' };
   }
 
-  async login(user: User): Promise<AuthResponseDTO> {
-    const tokens = await this.signTokens(user);
-    await this.saveRefreshToken(user.id, tokens.refreshToken);
+  async login(user: User): Promise<any> {
+    const tokens = await this.generateTokenPair(user);
+    await this.storeRefreshToken(user.id, tokens.refreshToken);
 
-    return plainToInstance(
-      AuthResponseDTO,
-      { user: user, tokens: tokens },
-      { excludeExtraneousValues: true },
-    );
+    return { user, tokens };
   }
 
   async logout(userID: number, refreshToken?: string): Promise<void> {
@@ -65,7 +55,6 @@ export class AuthService {
           revokedAt: IsNull(),
         },
       });
-
       if (!stored) {
         throw new UnauthorizedException('Invalid refresh token!');
       }
@@ -81,10 +70,7 @@ export class AuthService {
     }
   }
 
-  async refresh(
-    userID: number,
-    refreshToken: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  async refresh(userID: number, refreshToken: string): Promise<any> {
     const user = await this.usersService.findOneByID(userID);
     if (!user) {
       throw new UnauthorizedException('User not found!');
@@ -97,22 +83,23 @@ export class AuthService {
         revokedAt: IsNull(),
       },
     });
-
     if (!stored || stored.expiresAt < new Date()) {
-      throw new UnauthorizedException('Invalid refresh token!');
+      throw new UnauthorizedException(
+        'Refresh token may be expired, revoked or invalid!',
+      );
     }
 
     await this.refreshTokenRepository.update(stored.id, {
       revokedAt: new Date(),
     });
 
-    const tokens = await this.signTokens(user);
-    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    const tokens = await this.generateTokenPair(user);
+    await this.storeRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
   }
 
-  private async saveRefreshToken(
+  private async storeRefreshToken(
     userID: number,
     token: string,
     deviceName?: string,
@@ -133,9 +120,7 @@ export class AuthService {
     await this.refreshTokenRepository.save(refreshToken);
   }
 
-  private async signTokens(
-    user: User,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  private async generateTokenPair(user: User): Promise<any> {
     const payload = { sub: user.id, email: user.email };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -147,5 +132,27 @@ export class AuthService {
     ]);
 
     return { accessToken, refreshToken };
+  }
+
+  async validateLocal(email: string, password: string): Promise<User> {
+    const user = await this.usersService.findOneByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Email or password is incorrect!');
+    }
+
+    const match = await BcryptCompare(password, user.passwordHash);
+    if (!match) {
+      throw new UnauthorizedException('Email or password is incorrect!');
+    }
+
+    return user;
+  }
+
+  async validateJWT(payload: { sub: number; email: string }): Promise<User> {
+    const user = await this.usersService.findOneByID(payload.sub);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException();
+    }
+    return user;
   }
 }

@@ -12,10 +12,10 @@ export const PostgresOptions: DataSourceOptions = {
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   entities: [
-    __dirname + '/entities/*.entity.ts',
-    __dirname + '/../modules/*/entities/*.entity.ts',
+    __dirname + '/entities/*.entity{.ts,.js}',
+    __dirname + '/../modules/*/entities/*.entity{.ts,.js}',
   ],
-  migrations: [__dirname + '/migrations/*.ts'],
+  migrations: [__dirname + '/migrations/*{.ts,.js}'],
   namingStrategy: new SnakeNamingStrategy(),
   synchronize: false,
   logging: process.env.NODE_ENV !== 'production',

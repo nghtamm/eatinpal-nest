@@ -1,8 +1,8 @@
 import { Expose, Type } from 'class-transformer';
 
-class UserResponse {
+class User {
   @Expose({ name: 'uuid' })
-  id: number;
+  id: string;
 
   @Expose()
   email: string;
@@ -12,9 +12,21 @@ class UserResponse {
 
   @Expose({ name: 'avatarURL' })
   avatarUrl: string | null;
+
+  @Expose()
+  emailVerified: boolean;
+
+  @Expose()
+  isActive: boolean;
+
+  @Expose()
+  createdAt: Date;
+
+  @Expose()
+  updatedAt: Date;
 }
 
-class TokensResponse {
+class Tokens {
   @Expose()
   accessToken: string;
 
@@ -24,10 +36,10 @@ class TokensResponse {
 
 export class AuthResponseDTO {
   @Expose()
-  @Type(() => UserResponse)
-  user: UserResponse;
+  @Type(() => User)
+  user: User;
 
   @Expose()
-  @Type(() => TokensResponse)
-  tokens: TokensResponse;
+  @Type(() => Tokens)
+  tokens: Tokens;
 }

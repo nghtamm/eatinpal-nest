@@ -10,6 +10,7 @@ import { RefreshToken } from './entities/refresh-token.entity';
 import { UserAuthProvider } from './entities/user-auth-provider.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -26,6 +27,6 @@ import { LocalStrategy } from './strategies/local.strategy';
     PassportModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
 })
 export class AuthModule {}

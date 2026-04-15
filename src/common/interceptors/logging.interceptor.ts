@@ -8,7 +8,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 
 @Injectable()
-export class LoggerInterceptor implements NestInterceptor {
+export class LoggingInterceptor implements NestInterceptor {
   constructor(private readonly logger: PinoLogger) {}
 
   intercept(ctx: ExecutionContext, next: CallHandler): Observable<any> {
