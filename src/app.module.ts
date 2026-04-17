@@ -8,19 +8,21 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
+import AwsConfig from './config/aws.config';
 import JwtConfig from './config/jwt.config';
 import LoggerConfig from './config/logger.config';
 import { PostgresOptions } from './database/data-source';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { EmailModule } from './modules/email/email.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [JwtConfig],
+      load: [JwtConfig, AwsConfig],
     }),
     LoggerModule.forRoot(LoggerConfig()),
     TypeOrmModule.forRoot({
@@ -37,6 +39,7 @@ import { UsersModule } from './modules/users/users.module';
     DatabaseModule,
     AuthModule,
     UsersModule,
+    EmailModule,
   ],
   providers: [
     {

@@ -1,13 +1,16 @@
 import {
   Body,
   Controller,
+  Headers,
   HttpCode,
   HttpStatus,
   Post,
+  Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
-import { Serialize } from '../../common/decorators/serialize.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { Serialize } from '../../common/decorators/serialize.decorator';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { GetUser } from './decorators/user.decorator';
@@ -52,5 +55,28 @@ export class AuthController {
     @Body('refresh_token') refreshToken?: string,
   ) {
     return this.authService.logout(userID, refreshToken);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('resend-verification')
+  resendVerification(@Body('email') email: string) {
+    return this.authService.resendVerification(email);
+  }
+
+  @Public()
+  @Post('verify')
+  verify(
+    @Query('token') verificationToken: string,
+    @Res() res: Response,
+    @Headers('user-agent') userAgent: string,
+  ) {}
+
+  @Public()
+  @Serialize(AuthResponseDTO)
+  @HttpCode(HttpStatus.OK)
+  @Post('verified-login')
+  verifiedLogin(@Body('verification_token') verificationToken: string) {
+    return this.authService.verifiedLogin(verificationToken);
   }
 }

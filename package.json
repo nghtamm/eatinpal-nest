@@ -25,6 +25,7 @@
     "seed:food": "ts-node src/database/seeds/food.seeder.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.1030.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",

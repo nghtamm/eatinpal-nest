@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { AuthProvider } from '../../common/constants/auth-provider.enum';
@@ -23,25 +27,33 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  async create(dto: CreateUserDTO, provider: AuthProvider): Promise<User> {
+  async createOne(
+    dto: CreateUserDTO,
+    authProvider: AuthProvider,
+  ): Promise<User> {
     return this.dataSource.transaction(async (manager) => {
       const exists = await manager.exists(User, {
         where: { email: dto.email },
       });
       if (exists) {
-        throw new ConflictException('This email is already taken');
+        throw new ConflictException('Email is already in use');
       }
 
       const user = manager.create(User, dto);
       const saved = await manager.save(user);
 
-      const authProvider = manager.create(UserAuthProvider, {
+      const provider = manager.create(UserAuthProvider, {
         user: saved,
-        provider: provider,
+        provider: authProvider,
       });
-      await manager.save(authProvider);
+      await manager.save(provider);
 
       return saved;
     });
+  }
+
+  async updateEmailVerifiedByID(id: number, verified: boolean): Promise<void> {
+    await this.userRepository.update(id, { emailVerified: verified });
+    return;
   }
 }
