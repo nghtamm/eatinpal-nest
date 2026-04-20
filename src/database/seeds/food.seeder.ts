@@ -1,4 +1,4 @@
-import { getProcessedData } from 'eatinpal-crawler';
+import { CrawlAllData, ProcessAllData } from 'eatinpal-crawler';
 import { FoodItemType } from '../../common/constants/food-item-type.enum';
 import PostgresDataSource from '../data-source';
 import { FoodCategory } from '../entities/food-category.entity';
@@ -18,8 +18,9 @@ function slugify(str: string): string {
 }
 
 async function seed() {
-  console.log('[EATINPAL-CRAWLER] Fetching processed data...');
-  const data = getProcessedData();
+  console.log('[EATINPAL-CRAWLER] Crawling data from source...');
+  const raw = await CrawlAllData();
+  const data = ProcessAllData(raw.foods, raw.meals);
 
   console.log(
     `[EATINPAL-CRAWLER] Fetched: ${data.foods.length} foods, ${data.meals.length} meals`,
@@ -31,181 +32,240 @@ async function seed() {
   await PostgresDataSource.initialize();
   console.log('[POSTGRESQL] Database connected!');
 
-  await PostgresDataSource.transaction(async (manager) => {
-    // 1 - Seed food categories
-    console.log('[SEED] Seeding food categories...');
-    const categoryMap = new Map<string, number>();
+  try {
+    await PostgresDataSource.transaction(async (manager) => {
+      const existing = await manager.count(FoodCategory);
+      if (existing > 0) {
+        console.log(
+          `[SKIP] Database already has ${existing} categories — aborting seed`,
+        );
+        return;
+      }
 
-    for (const cat of data.foodCategories) {
-      const slug = slugify(cat.nameVI);
-      const saved = await manager.save(
-        FoodCategory,
+      const ingredientCategoryMap = new Map<string, number>();
+      const dishCategoryMap = new Map<string, number>();
+
+      // 1 - Seed food (ingredient) categories
+      console.log('[SEED] Seeding food categories...');
+      const ingredientCategories = data.foodCategories.map((cat) =>
         manager.create(FoodCategory, {
           nameVI: cat.nameVI,
-          nameEN: cat.nameEN,
-          slug: `ingredient-${slug}`,
+          nameEN: cat.nameEN || '',
+          slug: `ingredient-${slugify(cat.nameVI)}`,
           type: FoodItemType.INGREDIENT,
         }),
       );
-      categoryMap.set(cat.nameVI, saved.id);
-    }
 
-    // 2 - Seed meal categories
-    console.log('[SEED] Seeding meal categories...');
-    for (const cat of data.mealCategories) {
-      const slug = cat.slug || slugify(cat.nameVI);
-      const saved = await manager.save(
+      const savedIngredientCats = await manager.save(
         FoodCategory,
+        ingredientCategories,
+      );
+      savedIngredientCats.forEach((cat, i) => {
+        ingredientCategoryMap.set(data.foodCategories[i].nameVI, cat.id);
+      });
+
+      // 2 - Seed meal (dish) categories
+      console.log('[SEED] Seeding meal categories...');
+      const dishCategories = data.mealCategories.map((cat) =>
         manager.create(FoodCategory, {
           nameVI: cat.nameVI,
-          nameEN: cat.nameEN,
-          slug: `dish-${slug}`,
+          nameEN: cat.nameEN || '',
+          slug: `dish-${cat.slug || slugify(cat.nameVI)}`,
           type: FoodItemType.DISH,
           sourceID: cat.sourceID,
         }),
       );
-      categoryMap.set(cat.sourceID, saved.id);
-    }
-    console.log(`[OK] ${categoryMap.size} categories`);
 
-    // 3 - Seed nutrients
-    console.log('[SEED] Seeding nutrients...');
-    const nutrientMap = new Map<string, number>();
+      const savedDishCats = await manager.save(FoodCategory, dishCategories);
+      savedDishCats.forEach((cat, i) => {
+        dishCategoryMap.set(data.mealCategories[i].sourceID, cat.id);
+      });
 
-    // 3.1 - Collect unique nutrients from foods
-    for (const food of data.foods) {
-      for (const n of food.nutrients) {
-        const key = slugify(n.nameVI);
-        if (!key || !n.unit || nutrientMap.has(key)) continue;
-        const saved = await manager.save(
-          Nutrient,
-          manager.create(Nutrient, {
-            nameVI: n.nameVI,
-            nameEN: n.nameEN,
-            key,
-            unit: n.unit,
-          }),
-        );
-        nutrientMap.set(key, saved.id);
-      }
-    }
+      console.log(
+        `[OK] ${ingredientCategoryMap.size + dishCategoryMap.size} categories`,
+      );
 
-    // 3.2 - Collect unique nutrients from meals
-    for (const meal of data.meals) {
-      for (const n of meal.nutrients) {
+      // 3 - Seed nutrients (unique by key)
+      console.log('[SEED] Seeding nutrients...');
+      const nutrientMap = new Map<string, number>();
+      const nutrients: Nutrient[] = [];
+      const duplicated = new Set<string>();
+
+      const collect = (n: {
+        nameVI: string;
+        nameEN: string;
+        unit?: string | null;
+        key?: string | null;
+      }) => {
         const key = n.key || slugify(n.nameVI);
-        if (!key || !n.unit || nutrientMap.has(key)) continue;
-        const saved = await manager.save(
-          Nutrient,
+        if (!key) return;
+
+        if (!n.unit) {
+          console.warn(`[WARN] Nutrient '${n.nameVI}' skipped: missing unit`);
+          return;
+        }
+
+        if (duplicated.has(key)) return;
+        duplicated.add(key);
+
+        nutrients.push(
           manager.create(Nutrient, {
             nameVI: n.nameVI,
-            nameEN: n.nameEN,
+            nameEN: n.nameEN || '',
             key,
             unit: n.unit,
           }),
         );
-        nutrientMap.set(key, saved.id);
-      }
-    }
-    console.log(`[OK] ${nutrientMap.size} unique nutrients`);
+      };
 
-    // 4.1 - Seed food items
-    console.log('[SEED] Seeding food items...');
-    for (const food of data.foods) {
-      const catID = categoryMap.get(food.categoryVI);
-      if (!catID) {
-        console.warn(
-          `[WARN] Skipping food '${food.nameVI}': category not found`,
+      for (const food of data.foods) {
+        for (const n of food.nutrients) collect(n);
+      }
+      for (const meal of data.meals) {
+        for (const n of meal.nutrients) collect(n);
+      }
+
+      const savedNutrients = await manager.save(Nutrient, nutrients);
+      savedNutrients.forEach((nutr) => nutrientMap.set(nutr.key, nutr.id));
+
+      console.log(`[OK] ${nutrientMap.size} unique nutrients`);
+
+      // 4.1 - Seed food (ingredient) items
+      console.log('[SEED] Seeding food items...');
+      const ingredientEntities: FoodItem[] = [];
+      const ingredientSources: (typeof data.foods)[number][] = [];
+      const ingredientNutrients: FoodItemNutrient[] = [];
+
+      for (const food of data.foods) {
+        const catID = ingredientCategoryMap.get(food.categoryVI);
+        if (!catID) {
+          console.warn(
+            `[WARN] Skipping food '${food.nameVI}': category not found`,
+          );
+          continue;
+        }
+
+        ingredientEntities.push(
+          manager.create(FoodItem, {
+            type: FoodItemType.INGREDIENT,
+            code: food.code,
+            nameVI: food.nameVI,
+            nameEN: food.nameEN || '',
+            energy: food.energy ?? undefined,
+            categoryID: catID,
+            sourceID: food.sourceID,
+          }),
         );
-        continue;
+        ingredientSources.push(food);
       }
 
-      const saved = await manager.save(
+      const savedIngredients = await manager.save(
         FoodItem,
-        manager.create(FoodItem, {
-          type: FoodItemType.INGREDIENT,
-          code: food.code,
-          nameVI: food.nameVI,
-          nameEN: food.nameEN || '',
-          energy: food.energy ?? undefined,
-          categoryID: catID,
-          sourceID: food.sourceID,
-        }),
+        ingredientEntities,
+        { chunk: 200 },
       );
+      savedIngredients.forEach((item, i) => {
+        const food = ingredientSources[i];
+        const seen = new Set<number>();
 
-      const foodSetIDs = new Set<number>();
-      const foodItemNutrient = food.nutrients
-        .map((n) => {
-          const key = slugify(n.nameVI);
-          const nutrientID = nutrientMap.get(key);
-          if (!nutrientID || foodSetIDs.has(nutrientID)) return null;
-          foodSetIDs.add(nutrientID);
-          return manager.create(FoodItemNutrient, {
-            foodItemID: saved.id,
-            nutrientID: nutrientID,
-            value: n.value ?? undefined,
-          });
-        })
-        .filter((e): e is FoodItemNutrient => e !== null);
+        for (const n of food.nutrients) {
+          const nutrientID = nutrientMap.get(slugify(n.nameVI));
+          if (!nutrientID || seen.has(nutrientID)) continue;
+          seen.add(nutrientID);
 
-      if (foodItemNutrient.length > 0) {
-        await manager.save(FoodItemNutrient, foodItemNutrient);
-      }
-    }
-    console.log(`[OK] ${data.foods.length} ingredients`);
+          ingredientNutrients.push(
+            manager.create(FoodItemNutrient, {
+              foodItemID: item.id,
+              nutrientID,
+              value: n.value ?? undefined,
+            }),
+          );
+        }
+      });
 
-    // 4.2 - Seed meal items
-    for (const meal of data.meals) {
-      const catID = categoryMap.get(meal.categorySourceID);
-      if (!catID) {
-        console.warn(
-          `[WARN] Skipping meal '${meal.nameVI}': category not found`,
+      if (ingredientNutrients.length > 0) {
+        await manager.save(
+          FoodItemNutrient,
+          ingredientNutrients,
+          { chunk: 1000 },
         );
-        continue;
       }
 
-      const saved = await manager.save(
+      console.log(`[OK] ${savedIngredients.length} ingredients`);
+
+      // 4.2 - Seed meal (dish) items
+      console.log('[SEED] Seeding meal items...');
+      const dishEntities: FoodItem[] = [];
+      const dishSources: (typeof data.meals)[number][] = [];
+      const dishNutrients: FoodItemNutrient[] = [];
+
+      for (const meal of data.meals) {
+        const catID = dishCategoryMap.get(meal.categorySourceID);
+        if (!catID) {
+          console.warn(
+            `[WARN] Skipping meal '${meal.nameVI}': category not found`,
+          );
+          continue;
+        }
+
+        dishEntities.push(
+          manager.create(FoodItem, {
+            type: FoodItemType.DISH,
+            code: meal.code,
+            nameVI: meal.nameVI,
+            nameEN: meal.nameEN || '',
+            nameASCII: meal.nameASCII || undefined,
+            description: meal.description || undefined,
+            energy: meal.energy ?? undefined,
+            categoryID: catID,
+            sourceID: meal.sourceID,
+          }),
+        );
+        dishSources.push(meal);
+      }
+
+      const savedDishes = await manager.save(
         FoodItem,
-        manager.create(FoodItem, {
-          type: FoodItemType.DISH,
-          code: meal.code,
-          nameVI: meal.nameVI,
-          nameEN: meal.nameEN || '',
-          nameASCII: meal.nameAscii || undefined,
-          description: meal.description || undefined,
-          energy: meal.energy ?? undefined,
-          categoryID: catID,
-          sourceID: meal.sourceID,
-        }),
+        dishEntities,
+        { chunk: 200 },
       );
+      savedDishes.forEach((item, i) => {
+        const meal = dishSources[i];
+        const seen = new Set<number>();
 
-      const mealSetIDs = new Set<number>();
-      const mealItemNutrients = meal.nutrients
-        .map((n) => {
-          const key = n.key || slugify(n.nameVI);
-          const nutrientID = nutrientMap.get(key);
-          if (!nutrientID || mealSetIDs.has(nutrientID)) return null;
-          mealSetIDs.add(nutrientID);
-          return manager.create(FoodItemNutrient, {
-            foodItemID: saved.id,
-            nutrientID: nutrientID,
-            value: n.value ?? undefined,
-          });
-        })
-        .filter((e): e is FoodItemNutrient => e !== null);
+        for (const n of meal.nutrients) {
+          const nutrientID = nutrientMap.get(n.key || slugify(n.nameVI));
+          if (!nutrientID || seen.has(nutrientID)) continue;
+          seen.add(nutrientID);
+          
+          dishNutrients.push(
+            manager.create(FoodItemNutrient, {
+              foodItemID: item.id,
+              nutrientID,
+              value: n.value ?? undefined,
+            }),
+          );
+        }
+      });
 
-      if (mealItemNutrients.length > 0) {
-        await manager.save(FoodItemNutrient, mealItemNutrients);
+      if (dishNutrients.length > 0) {
+        await manager.save(
+          FoodItemNutrient,
+          dishNutrients,
+          { chunk: 1000 },
+        );
       }
-    }
-    console.log(`[OK] ${data.meals.length} dishes`);
-  });
 
-  console.log('[OK] Seed completed successfully!');
-  await PostgresDataSource.destroy();
+      console.log(`[OK] ${savedDishes.length} dishes`);
+    });
+
+    console.log('[OK] Seed completed successfully!');
+  } finally {
+    await PostgresDataSource.destroy();
+  }
 }
 
 seed().catch((err) => {
-  console.error('[WARN] Seed failed:', err);
+  console.error('[ERROR] Seed failed:', err);
   process.exit(1);
 });
