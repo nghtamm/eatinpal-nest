@@ -1,14 +1,18 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
+  HttpException,
   HttpStatus,
   Post,
   Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
+import { renderVerifyPage } from '../../../public/html/verify-page.html';
 import { Public } from '../../common/decorators/public.decorator';
 import { Serialize } from '../../common/decorators/serialize.decorator';
 import { User } from '../users/entities/user.entity';
@@ -65,12 +69,37 @@ export class AuthController {
   }
 
   @Public()
-  @Post('verify')
-  verify(
+  @Get('verify')
+  async verify(
     @Query('token') verificationToken: string,
+    @Headers('accept') accept: string,
     @Res() res: Response,
-    @Headers('user-agent') userAgent: string,
-  ) {}
+  ) {
+    const acceptJSON = accept?.includes('application/json') ?? false;
+    let message: string;
+
+    try {
+      const result = await this.authService.verify(verificationToken);
+      message = result.message;
+
+      if (acceptJSON) {
+        res.status(HttpStatus.OK).json({
+          status_code: HttpStatus.OK,
+          message,
+          data: { verified: result.verified },
+        });
+        return;
+      }
+    } catch (err) {
+      if (acceptJSON) throw err;
+      message =
+        err instanceof HttpException
+          ? err.message
+          : 'Something went wrong verifying your email';
+    }
+
+    res.status(HttpStatus.OK).type('text/html').send(renderVerifyPage(message));
+  }
 
   @Public()
   @Serialize(AuthResponseDTO)

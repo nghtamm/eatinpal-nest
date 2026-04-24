@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [""],
+        "components": [
+          { "/": "/auth/verify/*" }
+        ]
+      }
+    ]
+  }
+}

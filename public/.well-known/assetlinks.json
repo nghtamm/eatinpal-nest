@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.eatinpal.eatinpal",
+      "sha256_cert_fingerprints": [
+        "F5:66:42:F5:9E:06:96:78:6A:9F:A9:6A:8C:08:E0:A8:9D:0E:36:1E:74:2B:5B:96:40:52:6E:73:09:42:F1:8E"
+      ]
+    }
+  }
+]
