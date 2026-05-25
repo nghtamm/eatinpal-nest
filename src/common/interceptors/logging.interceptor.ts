@@ -39,7 +39,7 @@ export class LoggingInterceptor implements NestInterceptor {
           query: Object.keys(query).length > 0 ? query : undefined,
           body: body && Object.keys(body).length > 0 ? body : undefined,
         },
-        `→ ${method} ${url} | ${controller}.${handler}`,
+        `→ REQ | ${method} ${url} | ${controller}.${handler}`,
       );
 
       // [LOG - RESPONSE]
@@ -60,7 +60,7 @@ export class LoggingInterceptor implements NestInterceptor {
               status,
               duration: `${duration}ms`,
             },
-            `← ${method} ${url} | ${controller}.${handler} | ${status} | ${duration}ms`,
+            `← RES | ${method} ${url} | ${controller}.${handler} | ${status} | ${duration}ms`,
           );
         }),
         catchError((err) => {
@@ -81,7 +81,7 @@ export class LoggingInterceptor implements NestInterceptor {
               error: err.message,
               stack: err.stack,
             },
-            `✗ ${method} ${url} | ${controller}.${handler} | ${status} ${err.message} | ${duration}ms`,
+            `✗ ERR | ${method} ${url} | ${controller}.${handler} | ${status} ${err.message} | ${duration}ms`,
           );
           return throwError(() => err);
         }),
