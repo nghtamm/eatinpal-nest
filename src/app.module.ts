@@ -1,9 +1,11 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
+import { join } from 'path';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
@@ -35,6 +37,17 @@ import { UsersModule } from './modules/users/users.module';
         { name: 'medium', ttl: 10000, limit: 20 },
         { name: 'long', ttl: 60000, limit: 60 },
       ],
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'public'),
+      serveStaticOptions: {
+        dotfiles: 'allow',
+        setHeaders: (res, path) => {
+          if (path.endsWith('apple-app-site-association')) {
+            res.setHeader('Content-Type', 'application/json');
+          }
+        },
+      },
     }),
     DatabaseModule,
     AuthModule,

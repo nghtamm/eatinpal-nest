@@ -45,7 +45,7 @@ export class AuthService {
     const token = await this.generateVerificationToken(user);
     await this.sendVerificationEmail(user, token);
 
-    return { message: 'Registration successful', verificationToken: token };
+    return { message: 'Registration successful' };
   }
 
   async login(user: User): Promise<any> {
@@ -127,8 +127,8 @@ export class AuthService {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('jwtRefreshSecret'),
-        expiresIn: this.configService.get('jwtRefreshExpiration'),
+        secret: this.configService.getOrThrow<string>('jwtRefreshSecret'),
+        expiresIn: this.configService.getOrThrow('jwtRefreshExpiration'),
       }),
     ]);
 
@@ -169,17 +169,21 @@ export class AuthService {
     return await this.jwtService.signAsync(
       { sub: user.id, email: user.email, purpose: 'verification' },
       {
-        secret: this.configService.get<string>('jwtEmailSecret'),
-        expiresIn: this.configService.get('jwtEmailExpiration'),
+        secret: this.configService.getOrThrow<string>('jwtEmailSecret'),
+        expiresIn: this.configService.getOrThrow('jwtEmailExpiration'),
       },
     );
   }
 
-  private sendVerificationEmail = async (
+  private async sendVerificationEmail(
     user: User,
     verificationToken: string,
-  ): Promise<void> =>
-    this.emailService.sendVerificationEmail(user.email, verificationToken);
+  ): Promise<void> {
+    await this.emailService.sendVerificationEmail(
+      user.email,
+      verificationToken,
+    );
+  }
 
   async resendVerification(email: string): Promise<any> {
     let token: string | undefined;
@@ -190,17 +194,14 @@ export class AuthService {
       await this.sendVerificationEmail(user, token);
     }
 
-    return {
-      message: 'A verification mail has been sent to your inbox',
-      verificationToken: token,
-    };
+    return { message: 'A verification mail has been sent to your inbox' };
   }
 
   async verify(verificationToken: string): Promise<any> {
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(verificationToken, {
-        secret: this.configService.get<string>('jwtEmailSecret'),
+        secret: this.configService.getOrThrow<string>('jwtEmailSecret'),
       });
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
@@ -216,11 +217,11 @@ export class AuthService {
     }
 
     if (user.emailVerified) {
-      return { message: 'Email is already verified', verified: true };
+      return { message: 'Email is already verified' };
     }
 
     await this.usersService.updateEmailVerifiedByID(user.id, true);
-    return { message: 'Verification successful', verified: false };
+    return { message: 'Verification successful' };
   }
 
   async verifiedLogin(verificationToken: string): Promise<any> {
