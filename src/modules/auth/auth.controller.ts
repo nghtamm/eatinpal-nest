@@ -63,9 +63,9 @@ export class AuthController {
 
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('resend-verification')
-  resendVerification(@Body('email') email: string) {
-    return this.authService.resendVerification(email);
+  @Post('resend')
+  resend(@Body('email') email: string) {
+    return this.authService.resend(email);
   }
 
   @Public()
@@ -103,8 +103,8 @@ export class AuthController {
   @Public()
   @Serialize(AuthResponseDTO)
   @HttpCode(HttpStatus.OK)
-  @Post('verified-login')
-  verifiedLogin(@Body('verification_token') verificationToken: string) {
-    return this.authService.verifiedLogin(verificationToken);
+  @Post('magic-link')
+  magicLink(@Body('verification_token') verificationToken: string) {
+    return this.authService.magicLink(verificationToken);
   }
 }

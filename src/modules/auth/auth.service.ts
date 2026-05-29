@@ -185,7 +185,7 @@ export class AuthService {
     );
   }
 
-  async resendVerification(email: string): Promise<any> {
+  async resend(email: string): Promise<any> {
     let token: string | undefined;
     const user = await this.usersService.findOneByEmail(email);
 
@@ -224,7 +224,7 @@ export class AuthService {
     return { message: 'Verification successful' };
   }
 
-  async verifiedLogin(verificationToken: string): Promise<any> {
+  async magicLink(verificationToken: string): Promise<any> {
     let payload: any;
     try {
       payload = await this.jwtService.verifyAsync(verificationToken, {
