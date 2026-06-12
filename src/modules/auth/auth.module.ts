@@ -12,6 +12,7 @@ import { UserAuthProvider } from './entities/user-auth-provider.entity';
 import { RefreshStrategy } from './strategies/refresh.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { AuthCron } from './auth.cron';
 
 @Module({
   imports: [
@@ -28,9 +29,14 @@ import { LocalStrategy } from './strategies/local.strategy';
     }),
     UsersModule,
     PassportModule,
-    EmailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, RefreshStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    RefreshStrategy,
+    AuthCron,
+  ],
 })
 export class AuthModule {}
