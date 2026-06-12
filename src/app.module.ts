@@ -10,8 +10,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
-import AwsConfig from './config/aws.config';
-import JwtConfig from './config/jwt.config';
+import Configuration from './config/configuration';
 import LoggerConfig from './config/logger.config';
 import { PostgresOptions } from './database/data-source';
 import { DatabaseModule } from './database/database.module';
@@ -19,12 +18,13 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
 import { EmailModule } from './modules/email/email.module';
 import { UsersModule } from './modules/users/users.module';
+import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [JwtConfig, AwsConfig],
+      load: [Configuration],
     }),
     LoggerModule.forRoot(LoggerConfig()),
     TypeOrmModule.forRoot({
@@ -53,6 +53,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     UsersModule,
     EmailModule,
+    RedisModule,
   ],
   providers: [
     {
@@ -65,7 +66,7 @@ import { UsersModule } from './modules/users/users.module';
     },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_INTERCEPTOR, useValue: new TimeoutInterceptor(10000) },
+    { provide: APP_INTERCEPTOR, useValue: new TimeoutInterceptor() },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
