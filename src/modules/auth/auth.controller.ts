@@ -11,6 +11,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { renderVerifyPage } from '../../../public/html/verify-page.html';
 import { Public } from '../../common/decorators/public.decorator';
@@ -18,10 +19,13 @@ import { Serialize } from '../../common/decorators/serialize.decorator';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { GetUser } from './decorators/user.decorator';
+import { ForgotPasswordDTO } from './dto/forgot-password.dto';
 import { RegisterDTO } from './dto/register.dto';
+import { ResetPasswordDTO } from './dto/reset-password.dto';
 import { AuthResponseDTO } from './dto/response/auth-response.dto';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { VerifyOTPDTO } from './dto/verify-otp.dto';
 import { LocalAuthGuard } from './guards/local.guard';
+import { RefreshGuard } from './guards/refresh.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -43,7 +47,7 @@ export class AuthController {
   }
 
   @Public()
-  @UseGuards(JwtRefreshGuard)
+  @UseGuards(RefreshGuard)
   @Post('refresh')
   refresh(
     @GetUser('id') userID: number,
@@ -66,6 +70,33 @@ export class AuthController {
   @Post('resend')
   resend(@Body('email') email: string) {
     return this.authService.resend(email);
+  }
+
+  @Public()
+  @Throttle({
+    short: { limit: 1, ttl: 1000 },
+    medium: { limit: 3, ttl: 60000 },
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  forgotPassword(@Body() dto: ForgotPasswordDTO) {
+    return this.authService.requestReset(dto);
+  }
+
+  @Public()
+  @Throttle({ medium: { limit: 5, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-otp')
+  verifyOTP(@Body() dto: VerifyOTPDTO) {
+    return this.authService.verifyOTP(dto);
+  }
+
+  @Public()
+  @Throttle({ medium: { limit: 5, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDTO) {
+    return this.authService.resetPassword(dto);
   }
 
   @Public()

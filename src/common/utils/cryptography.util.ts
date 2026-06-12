@@ -17,3 +17,16 @@ export async function BcryptCompare(
 export function SHA256(data: string): string {
   return crypto.createHash('sha256').update(data).digest('hex');
 }
+
+export function GenerateNumericOTP(length: number): string {
+  if (!Number.isInteger(length) || length < 1) {
+    throw new RangeError('Length must be a positive integer');
+  }
+
+  let otp = '';
+  for (let i = 0; i < length; i++) {
+    otp += crypto.randomInt(0, 10);
+  }
+
+  return otp;
+}

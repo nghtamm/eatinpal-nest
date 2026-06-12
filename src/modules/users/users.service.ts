@@ -1,14 +1,10 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { AuthProvider } from '../../common/constants/auth-provider.enum';
 import { UserAuthProvider } from '../auth/entities/user-auth-provider.entity';
-import { CreateUserDTO } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
+import { ICreateUser } from './interface/create-user.interface';
 
 @Injectable()
 export class UsersService {
@@ -27,16 +23,13 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  async createOne(
-    dto: CreateUserDTO,
-    authProvider: AuthProvider,
-  ): Promise<User> {
+  async createOne(dto: ICreateUser, authProvider: AuthProvider): Promise<User> {
     return this.dataSource.transaction(async (manager) => {
       const exists = await manager.exists(User, {
         where: { email: dto.email },
       });
       if (exists) {
-        throw new ConflictException('Email is already in use');
+        throw new ConflictException('This email is already in use');
       }
 
       const user = manager.create(User, dto);
@@ -54,6 +47,11 @@ export class UsersService {
 
   async updateEmailVerifiedByID(id: number, verified: boolean): Promise<void> {
     await this.userRepository.update(id, { emailVerified: verified });
+    return;
+  }
+
+  async updatePasswordByID(id: number, passwordHash: string): Promise<void> {
+    await this.userRepository.update(id, { passwordHash });
     return;
   }
 }

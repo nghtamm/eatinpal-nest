@@ -237,7 +237,7 @@ async function seed() {
           const nutrientID = nutrientMap.get(n.key || slugify(n.nameVI));
           if (!nutrientID || seen.has(nutrientID)) continue;
           seen.add(nutrientID);
-          
+
           dishNutrients.push(
             manager.create(FoodItemNutrient, {
               foodItemID: item.id,

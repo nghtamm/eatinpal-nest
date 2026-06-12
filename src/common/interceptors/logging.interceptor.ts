@@ -20,8 +20,8 @@ export class LoggingInterceptor implements NestInterceptor {
       const { method, url, body, query, params, ip } = request;
       const controller = ctx.getClass().name;
       const handler = ctx.getHandler().name;
-      const userID: number | undefined = request.user?.id;
       const requestID = request.id;
+      const userID: number | undefined = request.user?.id;
       const start = Date.now();
 
       // [LOG - REQUEST]

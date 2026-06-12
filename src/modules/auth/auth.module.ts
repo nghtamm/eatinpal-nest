@@ -9,7 +9,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { UserAuthProvider } from './entities/user-auth-provider.entity';
-import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { RefreshStrategy } from './strategies/refresh.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 
@@ -20,8 +20,10 @@ import { LocalStrategy } from './strategies/local.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('jwtSecret'),
-        signOptions: { expiresIn: configService.get('jwtExpiration') },
+        secret: configService.get<string>('cfg.jwt.SECRET'),
+        signOptions: {
+          expiresIn: configService.get('cfg.jwt.EXPIRATION'),
+        },
       }),
     }),
     UsersModule,
@@ -29,6 +31,6 @@ import { LocalStrategy } from './strategies/local.strategy';
     EmailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, RefreshStrategy],
 })
 export class AuthModule {}
