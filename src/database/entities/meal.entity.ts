@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { MealType } from '../../common/constants/meal-type.enum';
+import { MealType } from '../../common/enums/meal-type.enum';
 import { DailyLog } from './daily-log.entity';
 import { MealEntry } from './meal-entry.entity';
 

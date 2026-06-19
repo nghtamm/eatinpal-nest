@@ -13,6 +13,8 @@ export default (): Params => {
           'req.headers.cookie',
           'body.password',
           'body.refresh_token',
+          'body.verification_token',
+          'query.token',
         ],
         censor: '[REDACTED]',
       },

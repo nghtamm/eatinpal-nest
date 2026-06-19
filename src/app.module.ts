@@ -16,7 +16,7 @@ import LoggerConfig from './config/logger.config';
 import { PostgresOptions } from './database/data-source';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { JwtAuthGuard } from './modules/auth/guards/jwt.guard';
+import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { EmailModule } from './modules/email/email.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { UsersModule } from './modules/users/users.module';

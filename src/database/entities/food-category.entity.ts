@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { FoodItemType } from '../../common/constants/food-item-type.enum';
+import { FoodItemType } from '../../common/enums/food-item-type.enum';
 import { FoodItem } from './food-item.entity';
 
 @Entity('food_categories')

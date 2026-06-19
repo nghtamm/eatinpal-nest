@@ -1,5 +1,5 @@
 import { CrawlAllData, ProcessAllData } from 'eatinpal-crawler';
-import { FoodItemType } from '../../common/constants/food-item-type.enum';
+import { FoodItemType } from '../../common/enums/food-item-type.enum';
 import PostgresDataSource from '../data-source';
 import { FoodCategory } from '../entities/food-category.entity';
 import { FoodItemNutrient } from '../entities/food-item-nutrient.entity';

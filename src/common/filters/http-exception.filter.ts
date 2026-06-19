@@ -17,11 +17,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     let message = STATUS_CODES[status] ?? 'Error';
     let errors: string[] = [];
+    let errorCode: string | undefined;
 
     if (typeof res === 'string') {
       message = res;
     } else if (typeof res === 'object') {
       const body = res as Record<string, any>;
+      errorCode = body.errorCode;
 
       if (Array.isArray(body.message)) {
         errors = body.message;
@@ -34,6 +36,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     response.status(status).json({
       status_code: status,
       message,
+      ...(errorCode && { error_code: errorCode }),
       ...(errors.length > 0 && { errors }),
     });
   }

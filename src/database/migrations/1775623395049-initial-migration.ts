@@ -15,13 +15,16 @@ export class InitialMigration1775623395049 implements MigrationInterface {
       `CREATE INDEX "IDX_f1b986eb2b94d3c3beaf580c09" ON "user_auth_providers" ("user_id") `,
     );
     await queryRunner.query(
-      `CREATE TABLE "refresh_tokens" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "token_hash" character varying(255) NOT NULL, "device_name" character varying(100), "ip_address" character varying(45), "expires_at" TIMESTAMP WITH TIME ZONE NOT NULL, "revoked_at" TIMESTAMP WITH TIME ZONE, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_a7838d2ba25be1342091b6695f1" UNIQUE ("token_hash"), CONSTRAINT "PK_7d8bee0204106019488c4c50ffa" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "refresh_tokens" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "token_hash" character varying(255) NOT NULL, "family_id" uuid NOT NULL, "device_name" character varying(100), "ip_address" character varying(45), "expires_at" TIMESTAMP WITH TIME ZONE NOT NULL, "revoked_at" TIMESTAMP WITH TIME ZONE, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_a7838d2ba25be1342091b6695f1" UNIQUE ("token_hash"), CONSTRAINT "PK_7d8bee0204106019488c4c50ffa" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_3ddc983c5f7bcf132fd8732c3f" ON "refresh_tokens" ("user_id") `,
     );
     await queryRunner.query(
       `CREATE INDEX "IDX_a3f8ed29c5855aa9d5d9640bfc" ON "refresh_tokens" ("revoked_at") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_d5e27da0cd39bc3bb2811fc8ba" ON "refresh_tokens" ("family_id") `,
     );
     await queryRunner.query(
       `CREATE TABLE "nutrition_goals" ("id" SERIAL NOT NULL, "user_id" integer NOT NULL, "calories" integer NOT NULL, "protein" numeric(5,1), "fat" numeric(5,1), "carbs" numeric(5,1), "is_custom" boolean NOT NULL DEFAULT false, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_f597d22636d94f843903aeb9aab" UNIQUE ("user_id"), CONSTRAINT "REL_f597d22636d94f843903aeb9aa" UNIQUE ("user_id"), CONSTRAINT "PK_843d6ec58065c4f34aabc9052a3" PRIMARY KEY ("id"))`,
@@ -253,6 +256,9 @@ export class InitialMigration1775623395049 implements MigrationInterface {
     );
     await queryRunner.query(
       `DROP INDEX "public"."IDX_3ddc983c5f7bcf132fd8732c3f"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_d5e27da0cd39bc3bb2811fc8ba"`,
     );
     await queryRunner.query(`DROP TABLE "refresh_tokens"`);
     await queryRunner.query(

@@ -3,16 +3,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EmailModule } from '../email/email.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
+import { AuthCron } from './auth.cron';
 import { AuthService } from './auth.service';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { UserAuthProvider } from './entities/user-auth-provider.entity';
-import { RefreshStrategy } from './strategies/refresh.strategy';
+import { PasswordService } from './services/password.service';
+import { SessionService } from './services/session.service';
+import { SignupService } from './services/signup.service';
+import { TokenService } from './services/token.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
-import { AuthCron } from './auth.cron';
 
 @Module({
   imports: [
@@ -33,9 +35,12 @@ import { AuthCron } from './auth.cron';
   controllers: [AuthController],
   providers: [
     AuthService,
+    SessionService,
+    TokenService,
+    SignupService,
+    PasswordService,
     LocalStrategy,
     JwtStrategy,
-    RefreshStrategy,
     AuthCron,
   ],
 })

@@ -16,16 +16,17 @@ import type { Response } from 'express';
 import { renderVerifyPage } from '../../../public/html/verify-page.html';
 import { Public } from '../../common/decorators/public.decorator';
 import { Serialize } from '../../common/decorators/serialize.decorator';
+import { GetUser } from '../../common/decorators/user.decorator';
+import { LocalAuthGuard } from '../../common/guards/local.guard';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from './auth.service';
-import { GetUser } from './decorators/user.decorator';
-import { ForgotPasswordDTO } from './dto/forgot-password.dto';
-import { RegisterDTO } from './dto/register.dto';
-import { ResetPasswordDTO } from './dto/reset-password.dto';
-import { AuthResponseDTO } from './dto/response/auth-response.dto';
-import { VerifyOTPDTO } from './dto/verify-otp.dto';
-import { LocalAuthGuard } from './guards/local.guard';
-import { RefreshGuard } from './guards/refresh.guard';
+import { ForgotPasswordDTO } from './dtos/forgot-password.dto';
+import { MagicLinkDTO } from './dtos/magic-link.dto';
+import { RegisterDTO } from './dtos/register.dto';
+import { ResendDTO } from './dtos/resend.dto';
+import { ResetPasswordDTO } from './dtos/reset-password.dto';
+import { AuthResponseDTO } from './dtos/response/auth-response.dto';
+import { VerifyOTPDTO } from './dtos/verify-otp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -47,13 +48,9 @@ export class AuthController {
   }
 
   @Public()
-  @UseGuards(RefreshGuard)
   @Post('refresh')
-  refresh(
-    @GetUser('id') userID: number,
-    @Body('refresh_token') refreshToken: string,
-  ) {
-    return this.authService.refresh(userID, refreshToken);
+  refresh(@Body('refresh_token') refreshToken: string) {
+    return this.authService.refresh(refreshToken);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -68,35 +65,8 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('resend')
-  resend(@Body('email') email: string) {
-    return this.authService.resend(email);
-  }
-
-  @Public()
-  @Throttle({
-    short: { limit: 1, ttl: 1000 },
-    medium: { limit: 3, ttl: 60000 },
-  })
-  @HttpCode(HttpStatus.OK)
-  @Post('forgot-password')
-  forgotPassword(@Body() dto: ForgotPasswordDTO) {
-    return this.authService.requestReset(dto);
-  }
-
-  @Public()
-  @Throttle({ medium: { limit: 5, ttl: 60000 } })
-  @HttpCode(HttpStatus.OK)
-  @Post('verify-otp')
-  verifyOTP(@Body() dto: VerifyOTPDTO) {
-    return this.authService.verifyOTP(dto);
-  }
-
-  @Public()
-  @Throttle({ medium: { limit: 5, ttl: 60000 } })
-  @HttpCode(HttpStatus.OK)
-  @Post('reset-password')
-  resetPassword(@Body() dto: ResetPasswordDTO) {
-    return this.authService.resetPassword(dto);
+  resend(@Body() dto: ResendDTO) {
+    return this.authService.resend(dto.email);
   }
 
   @Public()
@@ -108,34 +78,59 @@ export class AuthController {
   ) {
     const acceptJSON = accept?.includes('application/json') ?? false;
     let message: string;
+    let status: number = HttpStatus.OK;
 
     try {
       const result = await this.authService.verify(verificationToken);
-      message = result.message;
+      message = result.message ?? 'This account has been verified';
 
       if (acceptJSON) {
         res.status(HttpStatus.OK).json({
           status_code: HttpStatus.OK,
           message,
+          data: null,
         });
         return;
       }
     } catch (err) {
       if (acceptJSON) throw err;
-      message =
-        err instanceof HttpException
-          ? err.message
-          : 'Something went wrong verifying your email';
+      status = err instanceof HttpException
+        ? err.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+      message = err instanceof HttpException
+        ? err.message
+        : 'There was an error verifying your account';
     }
 
-    res.status(HttpStatus.OK).type('text/html').send(renderVerifyPage(message));
+    res.status(status).type('text/html').send(renderVerifyPage(message));
   }
 
   @Public()
   @Serialize(AuthResponseDTO)
   @HttpCode(HttpStatus.OK)
   @Post('magic-link')
-  magicLink(@Body('verification_token') verificationToken: string) {
-    return this.authService.magicLink(verificationToken);
+  magicLink(@Body() dto: MagicLinkDTO) {
+    return this.authService.magicLink(dto.verificationToken);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  forgotPassword(@Body() dto: ForgotPasswordDTO) {
+    return this.authService.requestReset(dto);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-otp')
+  verifyOTP(@Body() dto: VerifyOTPDTO) {
+    return this.authService.verifyOTP(dto);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDTO) {
+    return this.authService.resetPassword(dto);
   }
 }

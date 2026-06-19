@@ -1,10 +1,10 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { AuthProvider } from '../../common/constants/auth-provider.enum';
+import { AuthProvider } from '../../common/enums/auth-provider.enum';
 import { UserAuthProvider } from '../auth/entities/user-auth-provider.entity';
 import { User } from './entities/user.entity';
-import { ICreateUser } from './interface/create-user.interface';
+import { ICreateUser } from './interfaces/create-user.interface';
 
 @Injectable()
 export class UsersService {
@@ -23,16 +23,19 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  async createOne(dto: ICreateUser, authProvider: AuthProvider): Promise<User> {
+  async createOne(
+    options: ICreateUser,
+    authProvider: AuthProvider,
+  ): Promise<User> {
     return this.dataSource.transaction(async (manager) => {
       const exists = await manager.exists(User, {
-        where: { email: dto.email },
+        where: { email: options.email },
       });
       if (exists) {
-        throw new ConflictException('This email is already in use');
+        throw new ConflictException('This email is already registered');
       }
 
-      const user = manager.create(User, dto);
+      const user = manager.create(User, options);
       const saved = await manager.save(user);
 
       const provider = manager.create(UserAuthProvider, {
@@ -45,13 +48,14 @@ export class UsersService {
     });
   }
 
-  async updateEmailVerifiedByID(id: number, verified: boolean): Promise<void> {
-    await this.userRepository.update(id, { emailVerified: verified });
-    return;
+  async updateEmailVerifiedByID(
+    id: number,
+    emailVerified: boolean,
+  ): Promise<void> {
+    await this.userRepository.update(id, { emailVerified });
   }
 
   async updatePasswordByID(id: number, passwordHash: string): Promise<void> {
     await this.userRepository.update(id, { passwordHash });
-    return;
   }
 }

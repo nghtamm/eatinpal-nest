@@ -19,3 +19,7 @@ export function ObjectKeysToSnake(obj: unknown): unknown {
 
   return obj;
 }
+
+export function NormalizeText(str: string): string {
+  return str.toLowerCase().trim();
+}

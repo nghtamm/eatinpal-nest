@@ -25,6 +25,10 @@ export class RefreshToken {
   @Column({ type: 'varchar', length: 255, unique: true })
   tokenHash: string;
 
+  @Index()
+  @Column({ type: 'uuid', name: 'family_id' })
+  familyID: string;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   deviceName: string;
 

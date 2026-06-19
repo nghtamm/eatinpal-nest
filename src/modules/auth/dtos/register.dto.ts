@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -6,8 +7,10 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { NormalizeText } from 'src/common/utils/string.util';
 
-export class ResetPasswordDTO {
+export class RegisterDTO {
+  @Transform(({ value }) => NormalizeText(value))
   @IsEmail()
   @IsNotEmpty()
   email: string;
@@ -19,5 +22,10 @@ export class ResetPasswordDTO {
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$/, {
     message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
   })
-  newPassword: string;
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
 }

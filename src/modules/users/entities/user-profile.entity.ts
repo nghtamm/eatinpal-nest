@@ -7,9 +7,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ActivityLevel } from '../../../common/constants/activity-level.enum';
-import { Gender } from '../../../common/constants/gender.enum';
-import { UserGoal } from '../../../common/constants/user-goal.enum';
+import { ActivityLevel } from '../../../common/enums/activity-level.enum';
+import { Gender } from '../../../common/enums/gender.enum';
+import { UserGoal } from '../../../common/enums/user-goal.enum';
 import { User } from './user.entity';
 
 @Entity('user_profiles')

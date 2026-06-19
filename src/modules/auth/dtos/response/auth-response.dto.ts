@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 
-class User {
+class UserDTO {
   @Expose({ name: 'uuid' })
   id: string;
 
@@ -26,7 +26,7 @@ class User {
   updatedAt: Date;
 }
 
-class Tokens {
+class TokensDTO {
   @Expose()
   accessToken: string;
 
@@ -36,10 +36,10 @@ class Tokens {
 
 export class AuthResponseDTO {
   @Expose()
-  @Type(() => User)
-  user: User;
+  @Type(() => UserDTO)
+  user: UserDTO;
 
   @Expose()
-  @Type(() => Tokens)
-  tokens: Tokens;
+  @Type(() => TokensDTO)
+  tokens: TokensDTO;
 }

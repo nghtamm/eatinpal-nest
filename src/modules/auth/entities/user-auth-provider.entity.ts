@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { AuthProvider } from '../../../common/constants/auth-provider.enum';
+import { AuthProvider } from '../../../common/enums/auth-provider.enum';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('user_auth_providers')
