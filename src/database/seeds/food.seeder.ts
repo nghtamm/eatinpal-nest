@@ -184,11 +184,9 @@ async function seed() {
       });
 
       if (ingredientNutrients.length > 0) {
-        await manager.save(
-          FoodItemNutrient,
-          ingredientNutrients,
-          { chunk: 1000 },
-        );
+        await manager.save(FoodItemNutrient, ingredientNutrients, {
+          chunk: 1000,
+        });
       }
 
       console.log(`[OK] ${savedIngredients.length} ingredients`);
@@ -224,11 +222,9 @@ async function seed() {
         dishSources.push(meal);
       }
 
-      const savedDishes = await manager.save(
-        FoodItem,
-        dishEntities,
-        { chunk: 200 },
-      );
+      const savedDishes = await manager.save(FoodItem, dishEntities, {
+        chunk: 200,
+      });
       savedDishes.forEach((item, i) => {
         const meal = dishSources[i];
         const seen = new Set<number>();
@@ -249,11 +245,7 @@ async function seed() {
       });
 
       if (dishNutrients.length > 0) {
-        await manager.save(
-          FoodItemNutrient,
-          dishNutrients,
-          { chunk: 1000 },
-        );
+        await manager.save(FoodItemNutrient, dishNutrients, { chunk: 1000 });
       }
 
       console.log(`[OK] ${savedDishes.length} dishes`);

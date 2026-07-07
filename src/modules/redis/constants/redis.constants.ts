@@ -1,1 +1,1 @@
-export const REDIS_CLIENT = 'REDIS'
+export const REDIS_CLIENT = 'REDIS';

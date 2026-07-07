@@ -12,6 +12,8 @@ export default (): Params => {
           'req.headers.authorization',
           'req.headers.cookie',
           'body.password',
+          'body.new_password',
+          'body.otp',
           'body.refresh_token',
           'body.verification_token',
           'query.token',

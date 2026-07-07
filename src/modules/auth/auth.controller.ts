@@ -94,12 +94,14 @@ export class AuthController {
       }
     } catch (err) {
       if (acceptJSON) throw err;
-      status = err instanceof HttpException
-        ? err.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
-      message = err instanceof HttpException
-        ? err.message
-        : 'There was an error verifying your account';
+      status =
+        err instanceof HttpException
+          ? err.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      message =
+        err instanceof HttpException
+          ? err.message
+          : 'There was an error verifying your account';
     }
 
     res.status(status).type('text/html').send(renderVerifyPage(message));

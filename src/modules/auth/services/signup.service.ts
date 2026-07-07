@@ -51,7 +51,8 @@ export class SignupService {
     }
 
     return {
-      message: 'Account registered. A verification mail has been sent to your inbox',
+      message:
+        'Account registered. A verification mail has been sent to your inbox',
     };
   }
 
@@ -108,7 +109,7 @@ export class SignupService {
     verificationToken: string,
   ): Promise<User> {
     let payload: IVerificationTokenPayload;
-    
+
     try {
       payload = await this.jwtService.verifyAsync(verificationToken, {
         secret: this.configService.getOrThrow<string>('cfg.jwt.EMAIL_SECRET'),

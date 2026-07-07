@@ -19,7 +19,14 @@ export class RedisService implements OnModuleDestroy {
   }
 
   async incrEX(key: string, ttl: number): Promise<number> {
-    const [value] = await this.redisClient.increx(key, 'BYINT', 1, 'EX', ttl, 'ENX');
+    const [value] = await this.redisClient.increx(
+      key,
+      'BYINT',
+      1,
+      'EX',
+      ttl,
+      'ENX',
+    );
     return Number(value);
   }
 
